@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wordclock 時計</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#0b0d0e;--panel:#141719;--line:#262b2e;--txt:#e6e8e9;--dim:#8a9296;--acc:#00c8b4;--err:#ff6b5e;--ok:#5fd38d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+h1{font-size:22px;margin:0;font-weight:600;letter-spacing:.02em}
+h1 span{color:var(--acc);font-weight:700}
+#conn{margin-left:auto;font-size:13px;color:var(--dim)}
+#conn::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--dim);margin-right:6px}
+#conn.ok::before{background:var(--ok)}#conn.bad::before{background:var(--err)}
+.grid2{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin:0 0 12px;font-weight:600}
+#face{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:#000;padding:10px;border-radius:6px;aspect-ratio:1}
+#face div{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(14px,4.4vw,26px);color:#1d2224;font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic",sans-serif;transition:color .3s,text-shadow .3s}
+#sentence{font-size:18px;margin:12px 0 2px;font-family:"Hiragino Sans","Noto Sans CJK JP",sans-serif;min-height:1.4em;word-break:break-all}
+#roman{color:var(--dim);font-size:13px;min-height:1.2em}
+#german{font-size:14px;margin-top:4px;min-height:1.2em}
+select{background:#0e1112;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:7px 9px;font:inherit;max-width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--dim)}
+.chip b{color:var(--txt);font-weight:600}
+.row{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.row>label:first-child{width:150px;color:var(--dim);font-size:14px}
+input[type=text],input[type=number]{background:#0e1112;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:7px 9px;font:inherit}
+input[type=text]{width:220px;max-width:100%}
+input[type=number]{width:76px}
+input[type=color]{width:44px;height:34px;border:1px solid var(--line);border-radius:6px;background:none;padding:2px}
+input[type=range]{width:180px;accent-color:var(--acc)}
+.rgb input{width:62px}
+.picker{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0}
+.picker input[type=color]{width:72px;height:72px;border-radius:12px;padding:0;cursor:pointer;border:2px solid var(--line)}
+.picker input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.picker input[type=color]::-webkit-color-swatch{border:none;border-radius:10px}
+.picker input[type=color]::-moz-color-swatch{border:none;border-radius:10px}
+.presets{display:grid;grid-template-columns:repeat(6,30px);gap:7px}
+.presets button{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.presets button.sel{border-color:#fff}
+.presets button:hover{transform:scale(1.1)}
+.presets button:focus{outline:none}
+details.rgbbox summary{cursor:pointer;color:var(--dim);font-size:13px;margin:4px 0}
+.live{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--dim)}
+.swatch{width:34px;height:34px;border-radius:6px;border:1px solid var(--line)}
+.sub{border-top:1px solid var(--line);margin-top:14px;padding-top:6px}
+.sub h3{font-size:14px;margin:8px 0 2px;font-weight:600}
+.hint{color:var(--dim);font-size:12px}
+.muted{opacity:.45}
+.switch{position:relative;width:44px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#2a3033;border-radius:99px;cursor:pointer;transition:.2s}
+.switch span::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#cfd4d6;border-radius:50%;transition:.2s}
+.switch input:checked+span{background:var(--acc)}
+.switch input:checked+span::before{transform:translateX(20px);background:#fff}
+button{font:inherit;border-radius:6px;padding:8px 14px;border:1px solid var(--line);background:#1c2124;color:var(--txt);cursor:pointer}
+button:hover{border-color:#3a4246}
+button.primary{background:var(--acc);border-color:var(--acc);color:#002621;font-weight:600}
+button.danger{color:var(--err)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+#msg{font-size:13px}#msg.err{color:var(--err)}#msg.ok{color:var(--ok)}
+.err-field{border-color:var(--err)!important}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:5px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{color:var(--dim);width:42%;padding-right:10px}
+td:last-child{word-break:break-word;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:#0e1112;border-radius:3px;margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<header><h1><span>今は</span> Wordclock</h1><div id="conn">verbinde …</div></header>
+
+<div class="grid2">
+<div>
+<section>
+<h2>Live</h2>
+<div id="face"></div>
+<div id="sentence"></div>
+<div id="roman"></div>
+<div id="german"></div>
+<div class="chips" id="chips"></div>
+</section>
+</div>
+
+<div>
+<section>
+<h2>Einstellungen</h2>
+<form id="f" onsubmit="save(event)">
+
+<div class="row"><label for="ntp_server">NTP-Server</label>
+<input type="text" id="ntp_server" spellcheck="false" autocapitalize="off">
+<button type="button" onclick="post('/api/ntp').then(()=>note('NTP-Abgleich angestoßen',1))">Jetzt abgleichen</button></div>
+<div class="row"><label for="ntp_interval_h">Abgleich alle</label>
+<input type="number" id="ntp_interval_h" min="1" max="168"> <span class="hint">Stunden</span></div>
+
+<div class="sub">
+<div class="row"><label>Lichtsensor<br><span class="hint">Tag/Nacht-Modus</span></label>
+<label class="switch"><input type="checkbox" id="light_sensor" onchange="muteNight()"><span></span></label>
+<span class="hint" id="luxnow"></span></div>
+<div class="row"><label for="lux_night">Nacht unter</label>
+<input type="number" id="lux_night" min="0" step="0.5"> <span class="hint">lux</span></div>
+<div class="row"><label for="lux_day">Tag über</label>
+<input type="number" id="lux_day" min="0" step="0.5"> <span class="hint">lux (etwas höher als Nacht, gegen Flackern)</span></div>
+</div>
+
+<div class="sub" id="dayBox"><h3>Farbe Tag</h3></div>
+<div class="sub" id="nightBox"><h3>Farbe Nacht</h3></div>
+
+<div class="actions">
+<button class="primary" type="submit">Speichern</button>
+<button type="button" onclick="defaults()">Standardwerte</button>
+<span id="msg"></span>
+</div>
+</form>
+</section>
+
+<section>
+<h2>Modi</h2>
+<div class="row"><label>Demo-Modus<br><span class="hint">alle Uhrzeiten im Schnelldurchlauf</span></label>
+<label class="switch"><input type="checkbox" id="demo" onchange="toggle(this)"><span></span></label></div>
+<div class="row"><label>Test-Modus<br><span class="hint">alle LEDs blinken (hat Vorrang)</span></label>
+<label class="switch"><input type="checkbox" id="test" onchange="toggle(this)"><span></span></label></div>
+<div class="sub">
+<div class="row"><label for="voice_interval">Sprachausgabe<br><span class="hint">Ansage der Uhrzeit</span></label>
+<select id="voice_interval" onchange="setVoice(this)">
+<option value="0">aus</option><option value="1">jede Minute</option>
+<option value="15">alle 15 Minuten</option><option value="60">jede Stunde</option></select>
+<button type="button" onclick="sayNow()">Jetzt ansagen</button></div>
+<div class="row"><label for="voiceSel">Stimme</label><select id="voiceSel"></select></div>
+<div class="hint" id="voiceHint"></div>
+</div>
+</section>
+</div>
+</div>
+
+<section>
+<h2>System</h2>
+<table id="info"></table>
+<div class="actions"><button class="danger" type="button" onclick="reboot()">Neustart</button></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+let maxB=60,cfg=null;
+
+const PRESETS=[['Türkis',[0,200,180]],['Warmweiß',[255,150,60]],['Weiß',[255,255,255]],['Rot',[255,0,0]],['Orange',[255,80,0]],['Gelb',[255,200,0]],
+ ['Grün',[0,255,60]],['Mint',[60,255,160]],['Blau',[0,80,255]],['Himmelblau',[0,170,255]],['Violett',[150,0,255]],['Pink',[255,0,120]]];
+function colorBlock(p){
+  return `<div class="picker"><input type="color" id="${p}_pick" title="Farbe frei wählen">
+  <div class="presets" id="${p}_presets">${PRESETS.map(([n,c])=>`<button type="button" title="${n}" data-c="${c}" style="background:rgb(${c})"></button>`).join('')}</div></div>
+  <details class="rgbbox"><summary>RGB-Werte</summary>
+  <div class="row rgb">R <input type="number" id="${p}_r" min="0" max="255"> G <input type="number" id="${p}_g" min="0" max="255"> B <input type="number" id="${p}_b" min="0" max="255"></div></details>
+  <div class="row"><label>Helligkeit</label><input type="range" id="${p}_brightness" min="0" max="60"><span id="${p}_bval" class="hint"></span></div>`;
+}
+$('dayBox').insertAdjacentHTML('beforeend',colorBlock('day'));
+$('nightBox').insertAdjacentHTML('beforeend',colorBlock('night'));
+$('nightBox').insertAdjacentHTML('afterend','<label class="live"><label class="switch"><input type="checkbox" id="livePrev" checked><span></span></label>Farbe beim Auswählen live auf der Uhr zeigen (gespeichert wird erst mit „Speichern“)</label>');
+const hex=c=>'#'+c.map(v=>(+v).toString(16).padStart(2,'0')).join('');
+function setRGB(p,c){['r','g','b'].forEach((k,i)=>$(p+'_'+k).value=c[i]);$(p+'_pick').value=hex(c);markPreset(p);}
+function markPreset(p){const c=rgb(p).join(',');$(p+'_presets').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.c===c));}
+// Live-Vorschau: hoechstens alle 250 ms senden, der letzte Wert kommt immer an
+let prevTimer=null,prevPending=null,prevBusy=false;
+function preview(p){
+  if(!$('livePrev').checked)return;
+  prevPending={color:rgb(p).join(','),brightness:$(p+'_brightness').value};
+  if(!prevTimer)prevTimer=setTimeout(sendPreview,0);
+}
+async function sendPreview(){
+  if(prevBusy){prevTimer=setTimeout(sendPreview,100);return;}
+  const q=prevPending;prevPending=null;prevBusy=true;
+  try{await post('/api/preview',q);}catch(e){}
+  prevBusy=false;
+  prevTimer=prevPending?setTimeout(sendPreview,250):null;
+  refresh();
+}
+['day','night'].forEach(p=>{
+  $(p+'_pick').oninput=e=>{const h=e.target.value;setRGB(p,[1,3,5].map(i=>parseInt(h.substr(i,2),16)));preview(p);};
+  ['r','g','b'].forEach(k=>$(p+'_'+k).oninput=()=>{$(p+'_pick').value=hex(rgb(p));markPreset(p);preview(p);});
+  $(p+'_presets').onclick=e=>{const b=e.target.closest('button');if(!b)return;setRGB(p,b.dataset.c.split(',').map(Number));preview(p);};
+  $(p+'_brightness').oninput=()=>{$(p+'_bval').textContent=$(p+'_brightness').value+' %';preview(p);};
+});
+$('livePrev').onchange=e=>{if(!e.target.checked)post('/api/preview',{end:1}).then(refresh);};
+const rgb=p=>['r','g','b'].map(k=>Math.max(0,Math.min(255,+$(p+'_'+k).value||0)));
+
+const face=$('face');
+for(let i=0;i<64;i++)face.appendChild(document.createElement('div'));
+
+async function api(path,opt){
+  const r=await fetch(path,Object.assign({cache:'no-store'},opt||{}));
+  const j=await r.json();
+  if(!r.ok)throw j;return j;
+}
+const post=(path,params)=>api(path+(params?'?'+new URLSearchParams(params):''),{method:'POST'});
+
+function fill(c){
+  cfg=c;
+  $('ntp_server').value=c.ntp_server;$('ntp_interval_h').value=c.ntp_interval_h;
+  $('light_sensor').checked=c.light_sensor;$('lux_night').value=c.lux_night;$('lux_day').value=c.lux_day;
+  ['day','night'].forEach(p=>{
+    const col=c[p+'_color'];['r','g','b'].forEach((k,i)=>$(p+'_'+k).value=col[i]);
+    $(p+'_pick').value=hex(col);markPreset(p);$(p+'_brightness').value=c[p+'_brightness'];
+    $(p+'_bval').textContent=c[p+'_brightness']+' %';
+  });
+  $('demo').checked=c.demo;$('test').checked=c.test;$('voice_interval').value=c.voice_interval;muteNight();
+}
+function muteNight(){
+  const on=$('light_sensor').checked;
+  $('nightBox').classList.toggle('muted',!on);
+  ['lux_night','lux_day'].forEach(id=>$(id).closest('.row').classList.toggle('muted',!on));
+}
+function note(t,ok){const m=$('msg');m.textContent=t;m.className=ok?'ok':'err';clearTimeout(note.t);note.t=setTimeout(()=>m.textContent='',6000);}
+function markErrors(e){
+  document.querySelectorAll('.err-field').forEach(x=>x.classList.remove('err-field'));
+  const map={day_color:'day_r',night_color:'night_r'};
+  Object.keys(e||{}).forEach(k=>{const el=$(map[k]||k);if(el)el.classList.add('err-field');});
+}
+async function save(ev){
+  ev.preventDefault();
+  const p={ntp_server:$('ntp_server').value.trim(),ntp_interval_h:$('ntp_interval_h').value,
+    light_sensor:$('light_sensor').checked?1:0,lux_night:$('lux_night').value,lux_day:$('lux_day').value};
+  ['day','night'].forEach(x=>{p[x+'_color']=rgb(x).join(',');p[x+'_brightness']=$(x+'_brightness').value;});
+  try{const r=await post('/api/config',p);markErrors();fill(r.config);
+    note(r.changed.length?(r.ok?'Gespeichert ('+r.saved+')':'Übernommen, aber nicht gespeichert: '+r.saved):'Keine Änderung',r.ok);refresh();}
+  catch(e){markErrors(e.errors);note('Fehler: '+Object.entries(e.errors||{}).map(([k,v])=>k+': '+v).join(', '),0);}
+}
+async function toggle(el){
+  try{const r=await post('/api/config',{[el.id]:el.checked?1:0});fill(r.config);refresh();}
+  catch(e){el.checked=!el.checked;note('Fehler beim Umschalten',0);}
+}
+async function defaults(){
+  if(!confirm('Alle Einstellungen auf Standardwerte zurücksetzen?'))return;
+  const r=await post('/api/defaults');fill(r.config);note('Standardwerte gespeichert',1);refresh();
+}
+async function reboot(){
+  if(!confirm('Wordclock neu starten?'))return;
+  await post('/api/reboot');note('Neustart … Seite lädt in 15 s neu',1);setTimeout(()=>location.reload(),15000);
+}
+
+// ---------------------------------------------------------------- Sprachausgabe
+// Spricht dieser Browser (Web Speech API, japanische Stimme), solange die Seite offen ist.
+// Das Intervall ist auf der Uhr gespeichert, die Stimme nur in diesem Browser.
+const TTS='speechSynthesis' in window;
+let jaVoices=[],lastShown,lastSpeak='';
+const store={get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}},
+  set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}}};
+function loadVoices(){
+  if(!TTS)return;
+  jaVoices=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang));
+  const sel=$('voiceSel'),saved=store.get('wc_voice');
+  sel.innerHTML=jaVoices.map(v=>`<option>${esc(v.name)}</option>`).join('')||'<option value="">— keine japanische Stimme —</option>';
+  if(saved&&jaVoices.some(v=>v.name===saved))sel.value=saved;
+  voiceHint();
+}
+function voiceHint(){
+  let t;
+  if(!TTS)t='Dieser Browser kann keine Sprachausgabe.';
+  else if(!jaVoices.length)t='Keine japanische Stimme gefunden. Mac: Systemeinstellungen → Bedienungshilfen → Gesprochene Inhalte → Systemstimme → Stimmen verwalten → Japanisch (z. B. Kyoko) laden.';
+  else{t='Die Ansage kommt aus diesem Browser, solange die Seite geöffnet ist. Läuft der Tab im Hintergrund, kann sie bis zu einer Minute später kommen.';
+    if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)t='Bitte einmal auf die Seite klicken (z. B. „Jetzt ansagen“), sonst blockiert der Browser den Ton. '+t;}
+  $('voiceHint').textContent=t;
+}
+function say(text){
+  if(!TTS||!text)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP';u.rate=0.9;
+  const v=jaVoices.find(x=>x.name===$('voiceSel').value)||jaVoices[0];
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+function sayNow(){
+  if(lastSpeak)say(lastSpeak);else note('Gerade gibt es keine Uhrzeit zum Ansagen',0);
+  voiceHint();
+}
+async function setVoice(el){
+  try{const r=await post('/api/config',{voice_interval:el.value});fill(r.config);refresh();}
+  catch(e){note('Fehler beim Umschalten',0);if(cfg)el.value=cfg.voice_interval;}
+}
+// bei jeder neuen Minute pruefen, ob angesagt wird (nur im Uhr-Modus)
+function checkVoice(s){
+  lastSpeak=s.speak||'';
+  const first=lastShown===undefined,changed=s.shown!==lastShown;
+  lastShown=s.shown;
+  if(first||!changed||s.mode!=='clock'||!s.shown||!s.voice_interval)return;
+  if(+s.shown.substr(3,2)%s.voice_interval===0)say(s.speak);
+}
+$('voiceSel').onchange=e=>{store.set('wc_voice',e.target.value);say(lastSpeak);};
+const VOICE={1:'jede Minute',15:'alle 15 min',60:'stündlich'};
+
+const MODE={clock:'Uhr',demo:'Demo',test:'Test'};
+const fmtLux=v=>v<10?(+v).toFixed(1):Math.round(v);
+async function refresh(){
+  try{
+    const s=await api('/api/state');
+    $('conn').textContent='verbunden';$('conn').className='ok';
+    const lit=new Set(s.positions),col='rgb('+s.color.join(',')+')';
+    const k=0.35+0.65*Math.min(1,s.brightness/Math.max(1,maxB));
+    [...face.children].forEach((d,i)=>{d.textContent=s.layout[i];
+      if(lit.has(i)){d.style.color=col;d.style.opacity=k;d.style.textShadow='0 0 10px '+col;}
+      else{d.style.color='';d.style.opacity='';d.style.textShadow='';}});
+    $('sentence').textContent=s.text||'—';$('roman').textContent=s.roman||'';$('german').textContent=s.german||'';
+    checkVoice(s);
+    const chips=[['Modus',MODE[s.mode]||s.mode],['Anzeige',s.shown||'—'],['Uhrzeit',s.clock?s.clock.substr(11,5):'kein NTP'],
+      [s.preview?'Vorschau':(s.night?'Nacht':'Tag'),s.brightness+' %']];
+    if(s.voice_interval)chips.push(['Ansage',VOICE[s.voice_interval]]);
+    if(s.sensor)chips.push(['Licht',s.lux==null?'—':fmtLux(s.lux)+' lux'+(s.lux_avg!=null?' <span class="hint">(Ø '+fmtLux(s.lux_avg)+')</span>':'')]);
+    $('chips').innerHTML=chips.map(([a,b])=>`<span class="chip">${a} <b>${b}</b></span>`).join('');
+    $('luxnow').textContent=s.sensor?(s.sensor+(s.lux!=null?': '+fmtLux(s.lux)+' lux':'')):(s.sensor_error||'');
+  }catch(e){$('conn').textContent='keine Verbindung';$('conn').className='bad';}
+}
+const esc=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const kb=n=>n==null?'—':(n/1024).toFixed(0)+' KB';
+const dur=s=>{const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return (d?d+' d ':'')+h+' h '+m+' min';};
+const bar=(used,total)=>total?`<div class="bar"><i style="width:${(100*used/total).toFixed(0)}%"></i></div>`:'';
+async function info(){
+  try{
+    const i=await api('/api/info');maxB=i.leds.max_brightness;
+    ['day','night'].forEach(p=>$(p+'_brightness').max=maxB);
+    const memT=i.mem_free+i.mem_alloc,w=i.wifi,n=i.ntp,l=i.leds;
+    const rows=[
+      ['Firmware',i.firmware],['Board',i.machine+' <span class="hint">('+i.board+')</span>'],
+      ['Plattform',i.implementation+' · '+i.sysname],['Version',i.version],
+      ['CPU',(i.cpu_freq_mhz?i.cpu_freq_mhz+' MHz':'—')+(i.cpu_temp_c!=null?' · '+i.cpu_temp_c+' °C':'')],
+      ['RAM',kb(i.mem_free)+' frei von '+kb(memT)+bar(i.mem_alloc,memT)],
+      ['Flash',i.flash_total?kb(i.flash_free)+' frei von '+kb(i.flash_total)+bar(i.flash_total-i.flash_free,i.flash_total):'—'],
+      ['Laufzeit',dur(i.uptime_s)+' <span class="hint">(Start: '+(i.reset_reason||'?')+')</span>'],
+      ['WLAN',w.connected?(esc(w.ssid)+' · '+w.rssi+' dBm · Kanal '+w.channel):'nicht verbunden'],
+      ['IP / Port',w.ip+' : '+i.web_port+(w.hostname?' <span class="hint">('+w.hostname+')</span>':'')],['MAC',w.mac],
+      ['NTP',esc(n.server)+' · '+(n.last_sync?'zuletzt '+n.last_sync:'noch nicht')+(n.error?' <span style="color:var(--err)">'+esc(n.error)+'</span>':'')+' · nächster in '+dur(n.next_in_s)],
+      ['LEDs',l.count+' (Variante '+l.variant+', '+l.pin+', Start '+l.start+', max. '+l.max_brightness+' %)'],
+      ['Einstellungen',i.config_storage]];
+    $('info').innerHTML=rows.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('');
+  }catch(e){}
+}
+if(TTS){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}else voiceHint();
+api('/api/config').then(fill).catch(()=>note('Einstellungen nicht ladbar',0));
+info();refresh();setInterval(refresh,2000);setInterval(info,15000);
+</script>
+</body>
+</html>
