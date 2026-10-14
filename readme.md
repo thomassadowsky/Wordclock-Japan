@@ -35,7 +35,6 @@ All 64 cells are used. The grid also supports an optional weekday (今は木曜�
 | `wordclock_sim.py` | Terminal simulator for the Mac (not uploaded to the board) |
 | `deploy.sh` | Uploads changed files to the board over Wi-Fi (CircuitPython Web Workflow) |
 | `deploy-manual.sh` | Minimal upload of individual files without comparison |
-| `alt/` | Older firmware versions for reference |
 
 ## Hardware
 
