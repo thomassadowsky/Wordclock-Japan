@@ -14,6 +14,11 @@ header{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
 h1{font-size:22px;margin:0;font-weight:600;letter-spacing:.02em}
 h1 span{color:var(--acc);font-weight:700}
 #conn{margin-left:auto;font-size:13px;color:var(--dim)}
+.lang{display:flex;gap:6px;align-self:center}
+.lang button{padding:0;width:30px;height:20px;border-radius:3px;overflow:hidden;border:1px solid var(--line);background:none;opacity:.45;line-height:0}
+.lang button:hover{opacity:.8}
+.lang button.on{opacity:1;border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.lang svg{width:100%;height:100%;display:block}
 #conn::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--dim);margin-right:6px}
 #conn.ok::before{background:var(--ok)}#conn.bad::before{background:var(--err)}
 .grid2{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px}
@@ -77,7 +82,8 @@ td:last-child{word-break:break-word;font-variant-numeric:tabular-nums}
 </head>
 <body>
 <main>
-<header><h1><span>今は</span> Wordclock</h1><div id="conn">verbinde …</div></header>
+<header><h1><span>今は</span> Wordclock</h1><div id="conn" data-i18n="connecting">verbinde …</div>
+<div class="lang"><button type="button" id="lang_de" title="Deutsch" aria-label="Deutsch" onclick="setLang('de')"><svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></button><button type="button" id="lang_en" title="English" aria-label="English" onclick="setLang('en')"><svg viewBox="0 0 60 30" aria-hidden="true"><clipPath id="gbt"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#gbt)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></svg></button></div></header>
 
 <div class="grid2">
 <div>
@@ -93,49 +99,49 @@ td:last-child{word-break:break-word;font-variant-numeric:tabular-nums}
 
 <div>
 <section>
-<h2>Einstellungen</h2>
+<h2 data-i18n="settings">Einstellungen</h2>
 <form id="f" onsubmit="save(event)">
 
-<div class="row"><label for="ntp_server">NTP-Server</label>
+<div class="row"><label for="ntp_server" data-i18n="ntpServer">NTP-Server</label>
 <input type="text" id="ntp_server" spellcheck="false" autocapitalize="off">
-<button type="button" onclick="post('/api/ntp').then(()=>note('NTP-Abgleich angestoßen',1))">Jetzt abgleichen</button></div>
-<div class="row"><label for="ntp_interval_h">Abgleich alle</label>
-<input type="number" id="ntp_interval_h" min="1" max="168"> <span class="hint">Stunden</span></div>
+<button type="button" onclick="post('/api/ntp').then(()=>note(t('ntpStarted'),1))" data-i18n="syncNow">Jetzt abgleichen</button></div>
+<div class="row"><label for="ntp_interval_h" data-i18n="syncEvery">Abgleich alle</label>
+<input type="number" id="ntp_interval_h" min="1" max="168"> <span class="hint" data-i18n="hours">Stunden</span></div>
 
 <div class="sub">
-<div class="row"><label>Lichtsensor<br><span class="hint">Tag/Nacht-Modus</span></label>
+<div class="row"><label data-i18n-html="lightSensor">Lichtsensor<br><span class="hint">Tag/Nacht-Modus</span></label>
 <label class="switch"><input type="checkbox" id="light_sensor" onchange="muteNight()"><span></span></label>
 <span class="hint" id="luxnow"></span></div>
-<div class="row"><label for="lux_night">Nacht unter</label>
+<div class="row"><label for="lux_night" data-i18n="nightBelow">Nacht unter</label>
 <input type="number" id="lux_night" min="0" step="0.5"> <span class="hint">lux</span></div>
-<div class="row"><label for="lux_day">Tag über</label>
-<input type="number" id="lux_day" min="0" step="0.5"> <span class="hint">lux (etwas höher als Nacht, gegen Flackern)</span></div>
+<div class="row"><label for="lux_day" data-i18n="dayAbove">Tag über</label>
+<input type="number" id="lux_day" min="0" step="0.5"> <span class="hint" data-i18n="dayAboveHint">lux (etwas höher als Nacht, gegen Flackern)</span></div>
 </div>
 
-<div class="sub" id="dayBox"><h3>Farbe Tag</h3></div>
-<div class="sub" id="nightBox"><h3>Farbe Nacht</h3></div>
+<div class="sub" id="dayBox"><h3 data-i18n="colorDay">Farbe Tag</h3></div>
+<div class="sub" id="nightBox"><h3 data-i18n="colorNight">Farbe Nacht</h3></div>
 
 <div class="actions">
-<button class="primary" type="submit">Speichern</button>
-<button type="button" onclick="defaults()">Standardwerte</button>
+<button class="primary" type="submit" data-i18n="save">Speichern</button>
+<button type="button" onclick="defaults()" data-i18n="defaults">Standardwerte</button>
 <span id="msg"></span>
 </div>
 </form>
 </section>
 
 <section>
-<h2>Modi</h2>
-<div class="row"><label>Demo-Modus<br><span class="hint">alle Uhrzeiten im Schnelldurchlauf</span></label>
+<h2 data-i18n="modes">Modi</h2>
+<div class="row"><label data-i18n-html="demoMode">Demo-Modus<br><span class="hint">alle Uhrzeiten im Schnelldurchlauf</span></label>
 <label class="switch"><input type="checkbox" id="demo" onchange="toggle(this)"><span></span></label></div>
-<div class="row"><label>Test-Modus<br><span class="hint">alle LEDs blinken (hat Vorrang)</span></label>
+<div class="row"><label data-i18n-html="testMode">Test-Modus<br><span class="hint">alle LEDs blinken (hat Vorrang)</span></label>
 <label class="switch"><input type="checkbox" id="test" onchange="toggle(this)"><span></span></label></div>
 <div class="sub">
-<div class="row"><label for="voice_interval">Sprachausgabe<br><span class="hint">Ansage der Uhrzeit</span></label>
+<div class="row"><label for="voice_interval" data-i18n-html="speech">Sprachausgabe<br><span class="hint">Ansage der Uhrzeit</span></label>
 <select id="voice_interval" onchange="setVoice(this)">
-<option value="0">aus</option><option value="1">jede Minute</option>
-<option value="15">alle 15 Minuten</option><option value="60">jede Stunde</option></select>
-<button type="button" onclick="sayNow()">Jetzt ansagen</button></div>
-<div class="row"><label for="voiceSel">Stimme</label><select id="voiceSel"></select></div>
+<option value="0" data-i18n="vOff">aus</option><option value="1" data-i18n="v1">jede Minute</option>
+<option value="15" data-i18n="v15">alle 15 Minuten</option><option value="60" data-i18n="v60">jede Stunde</option></select>
+<button type="button" onclick="sayNow()" data-i18n="sayNow">Jetzt ansagen</button></div>
+<div class="row"><label for="voiceSel" data-i18n="voice">Stimme</label><select id="voiceSel"></select></div>
 <div class="hint" id="voiceHint"></div>
 </div>
 </section>
@@ -145,7 +151,7 @@ td:last-child{word-break:break-word;font-variant-numeric:tabular-nums}
 <section>
 <h2>System</h2>
 <table id="info"></table>
-<div class="actions"><button class="danger" type="button" onclick="reboot()">Neustart</button></div>
+<div class="actions"><button class="danger" type="button" onclick="reboot()" data-i18n="reboot">Neustart</button></div>
 </section>
 </main>
 
@@ -153,18 +159,78 @@ td:last-child{word-break:break-word;font-variant-numeric:tabular-nums}
 const $=id=>document.getElementById(id);
 let maxB=60,cfg=null;
 
+// ---------------------------------------------------------------- Sprache (Deutsch/Englisch)
+// Wird nur in diesem Browser gespeichert (localStorage), Standard nach Browsersprache.
+const I18N={
+de:{connecting:'verbinde …',connected:'verbunden',noConn:'keine Verbindung',settings:'Einstellungen',ntpServer:'NTP-Server',
+ syncNow:'Jetzt abgleichen',syncEvery:'Abgleich alle',hours:'Stunden',lightSensor:'Lichtsensor<br><span class="hint">Tag/Nacht-Modus</span>',
+ nightBelow:'Nacht unter',dayAbove:'Tag über',dayAboveHint:'lux (etwas höher als Nacht, gegen Flackern)',colorDay:'Farbe Tag',colorNight:'Farbe Nacht',
+ save:'Speichern',defaults:'Standardwerte',modes:'Modi',demoMode:'Demo-Modus<br><span class="hint">alle Uhrzeiten im Schnelldurchlauf</span>',
+ testMode:'Test-Modus<br><span class="hint">alle LEDs blinken (hat Vorrang)</span>',speech:'Sprachausgabe<br><span class="hint">Ansage der Uhrzeit</span>',
+ vOff:'aus',v1:'jede Minute',v15:'alle 15 Minuten',v60:'jede Stunde',sayNow:'Jetzt ansagen',voice:'Stimme',reboot:'Neustart',
+ pickFree:'Farbe frei wählen',rgbValues:'RGB-Werte',brightness:'Helligkeit',livePreview:'Farbe beim Auswählen live auf der Uhr zeigen (gespeichert wird erst mit „Speichern“)',
+ presets:['Türkis','Warmweiß','Weiß','Rot','Orange','Gelb','Grün','Mint','Blau','Himmelblau','Violett','Pink'],
+ ntpStarted:'NTP-Abgleich angestoßen',loadFail:'Einstellungen nicht ladbar',saved:'Gespeichert',notSaved:'Übernommen, aber nicht gespeichert: ',noChange:'Keine Änderung',
+ error:'Fehler: ',toggleFail:'Fehler beim Umschalten',confirmDefaults:'Alle Einstellungen auf Standardwerte zurücksetzen?',defaultsSaved:'Standardwerte gespeichert',
+ confirmReboot:'Wordclock neu starten?',rebooting:'Neustart … Seite lädt in 15 s neu',
+ noVoice:'— keine japanische Stimme —',noTTS:'Dieser Browser kann keine Sprachausgabe.',
+ noJaVoice:'Keine japanische Stimme gefunden. Mac: Systemeinstellungen → Bedienungshilfen → Gesprochene Inhalte → Systemstimme → Stimmen verwalten → Japanisch (z. B. Kyoko) laden.',
+ voiceInfo:'Die Ansage kommt aus diesem Browser, solange die Seite geöffnet ist. Läuft der Tab im Hintergrund, kann sie bis zu einer Minute später kommen.',
+ clickFirst:'Bitte einmal auf die Seite klicken (z. B. „Jetzt ansagen“), sonst blockiert der Browser den Ton. ',nothingToSay:'Gerade gibt es keine Uhrzeit zum Ansagen',
+ vChip:{1:'jede Minute',15:'alle 15 min',60:'stündlich'},mode:{clock:'Uhr',demo:'Demo',test:'Test'},
+ cMode:'Modus',cShown:'Anzeige',cTime:'Uhrzeit',noNtp:'kein NTP',cPreview:'Vorschau',cNight:'Nacht',cDay:'Tag',cVoice:'Ansage',cLight:'Licht',
+ allOn:'alle an',allOff:'alle aus',waitNtp:'warte auf NTP',
+ iFirmware:'Firmware',iBoard:'Board',iPlatform:'Plattform',iVersion:'Version',iCpu:'CPU',iRam:'RAM',iFlash:'Flash',iUptime:'Laufzeit',iStart:'Start',
+ iWifi:'WLAN',iIp:'IP / Port',iMac:'MAC',iNtp:'NTP',iLeds:'LEDs',iCfg:'Einstellungen',freeOf:' frei von ',notConn:'nicht verbunden',channel:'Kanal',
+ last:'zuletzt ',notYet:'noch nicht',nextIn:'nächster in ',variant:'Variante',start:'Start',max:'max.'},
+en:{connecting:'connecting …',connected:'connected',noConn:'no connection',settings:'Settings',ntpServer:'NTP server',
+ syncNow:'Sync now',syncEvery:'Sync every',hours:'hours',lightSensor:'Light sensor<br><span class="hint">day/night mode</span>',
+ nightBelow:'Night below',dayAbove:'Day above',dayAboveHint:'lux (a bit higher than night, prevents flicker)',colorDay:'Day color',colorNight:'Night color',
+ save:'Save',defaults:'Defaults',modes:'Modes',demoMode:'Demo mode<br><span class="hint">all times as a time-lapse</span>',
+ testMode:'Test mode<br><span class="hint">all LEDs blink (takes priority)</span>',speech:'Speech output<br><span class="hint">spoken time</span>',
+ vOff:'off',v1:'every minute',v15:'every 15 minutes',v60:'every hour',sayNow:'Speak now',voice:'Voice',reboot:'Restart',
+ pickFree:'Pick any color',rgbValues:'RGB values',brightness:'Brightness',livePreview:'Show color live on the clock while choosing (saved only with “Save”)',
+ presets:['Turquoise','Warm white','White','Red','Orange','Yellow','Green','Mint','Blue','Sky blue','Violet','Pink'],
+ ntpStarted:'NTP sync started',loadFail:'Could not load settings',saved:'Saved',notSaved:'Applied but not saved: ',noChange:'No change',
+ error:'Error: ',toggleFail:'Could not switch',confirmDefaults:'Reset all settings to defaults?',defaultsSaved:'Defaults saved',
+ confirmReboot:'Restart the word clock?',rebooting:'Restarting … page reloads in 15 s',
+ noVoice:'— no Japanese voice —',noTTS:'This browser does not support speech output.',
+ noJaVoice:'No Japanese voice found. Mac: System Settings → Accessibility → Spoken Content → System Voice → Manage Voices → Japanese (e.g. Kyoko).',
+ voiceInfo:'The announcement comes from this browser while the page is open. In a background tab it can be up to a minute late.',
+ clickFirst:'Please click on the page once (e.g. “Speak now”), otherwise the browser blocks sound. ',nothingToSay:'There is no time to announce right now',
+ vChip:{1:'every minute',15:'every 15 min',60:'hourly'},mode:{clock:'Clock',demo:'Demo',test:'Test'},
+ cMode:'Mode',cShown:'Shown',cTime:'Time',noNtp:'no NTP',cPreview:'Preview',cNight:'Night',cDay:'Day',cVoice:'Announce',cLight:'Light',
+ allOn:'all on',allOff:'all off',waitNtp:'waiting for NTP',
+ iFirmware:'Firmware',iBoard:'Board',iPlatform:'Platform',iVersion:'Version',iCpu:'CPU',iRam:'RAM',iFlash:'Flash',iUptime:'Uptime',iStart:'start',
+ iWifi:'Wi-Fi',iIp:'IP / port',iMac:'MAC',iNtp:'NTP',iLeds:'LEDs',iCfg:'Settings',freeOf:' free of ',notConn:'not connected',channel:'channel',
+ last:'last ',notYet:'not yet',nextIn:'next in ',variant:'variant',start:'start',max:'max.'}};
+const store={get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}},
+  set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}}};
+let lang=store.get('wc_lang')||((navigator.language||'').toLowerCase().startsWith('de')?'de':'en');
+if(!I18N[lang])lang='de';
+const t=k=>(I18N[lang][k]!==undefined?I18N[lang][k]:I18N.de[k]);
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>el.innerHTML=t(el.dataset.i18nHtml));
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.dataset.i18nTitle));
+  document.querySelectorAll('.presets').forEach(box=>[...box.children].forEach((b,i)=>b.title=t('presets')[i]));
+  ['de','en'].forEach(l=>{const b=$('lang_'+l);b.classList.toggle('on',l===lang);b.setAttribute('aria-pressed',l===lang);});
+}
+function setLang(l){lang=l;store.set('wc_lang',l);applyLang();if(typeof loadVoices==='function'&&TTS)loadVoices();else voiceHint();refresh();info();}
+
 const PRESETS=[['Türkis',[0,200,180]],['Warmweiß',[255,150,60]],['Weiß',[255,255,255]],['Rot',[255,0,0]],['Orange',[255,80,0]],['Gelb',[255,200,0]],
  ['Grün',[0,255,60]],['Mint',[60,255,160]],['Blau',[0,80,255]],['Himmelblau',[0,170,255]],['Violett',[150,0,255]],['Pink',[255,0,120]]];
 function colorBlock(p){
-  return `<div class="picker"><input type="color" id="${p}_pick" title="Farbe frei wählen">
+  return `<div class="picker"><input type="color" id="${p}_pick" data-i18n-title="pickFree">
   <div class="presets" id="${p}_presets">${PRESETS.map(([n,c])=>`<button type="button" title="${n}" data-c="${c}" style="background:rgb(${c})"></button>`).join('')}</div></div>
-  <details class="rgbbox"><summary>RGB-Werte</summary>
+  <details class="rgbbox"><summary data-i18n="rgbValues">RGB-Werte</summary>
   <div class="row rgb">R <input type="number" id="${p}_r" min="0" max="255"> G <input type="number" id="${p}_g" min="0" max="255"> B <input type="number" id="${p}_b" min="0" max="255"></div></details>
-  <div class="row"><label>Helligkeit</label><input type="range" id="${p}_brightness" min="0" max="60"><span id="${p}_bval" class="hint"></span></div>`;
+  <div class="row"><label data-i18n="brightness">Helligkeit</label><input type="range" id="${p}_brightness" min="0" max="60"><span id="${p}_bval" class="hint"></span></div>`;
 }
 $('dayBox').insertAdjacentHTML('beforeend',colorBlock('day'));
 $('nightBox').insertAdjacentHTML('beforeend',colorBlock('night'));
-$('nightBox').insertAdjacentHTML('afterend','<label class="live"><label class="switch"><input type="checkbox" id="livePrev" checked><span></span></label>Farbe beim Auswählen live auf der Uhr zeigen (gespeichert wird erst mit „Speichern“)</label>');
+$('nightBox').insertAdjacentHTML('afterend','<label class="live"><label class="switch"><input type="checkbox" id="livePrev" checked><span></span></label><span data-i18n="livePreview"></span></label>');
 const hex=c=>'#'+c.map(v=>(+v).toString(16).padStart(2,'0')).join('');
 function setRGB(p,c){['r','g','b'].forEach((k,i)=>$(p+'_'+k).value=c[i]);$(p+'_pick').value=hex(c);markPreset(p);}
 function markPreset(p){const c=rgb(p).join(',');$(p+'_presets').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.c===c));}
@@ -230,20 +296,20 @@ async function save(ev){
     light_sensor:$('light_sensor').checked?1:0,lux_night:$('lux_night').value,lux_day:$('lux_day').value};
   ['day','night'].forEach(x=>{p[x+'_color']=rgb(x).join(',');p[x+'_brightness']=$(x+'_brightness').value;});
   try{const r=await post('/api/config',p);markErrors();fill(r.config);
-    note(r.changed.length?(r.ok?'Gespeichert ('+r.saved+')':'Übernommen, aber nicht gespeichert: '+r.saved):'Keine Änderung',r.ok);refresh();}
-  catch(e){markErrors(e.errors);note('Fehler: '+Object.entries(e.errors||{}).map(([k,v])=>k+': '+v).join(', '),0);}
+    note(r.changed.length?(r.ok?t('saved')+' ('+r.saved+')':t('notSaved')+r.saved):t('noChange'),r.ok);refresh();}
+  catch(e){markErrors(e.errors);note(t('error')+Object.entries(e.errors||{}).map(([k,v])=>k+': '+v).join(', '),0);}
 }
 async function toggle(el){
   try{const r=await post('/api/config',{[el.id]:el.checked?1:0});fill(r.config);refresh();}
-  catch(e){el.checked=!el.checked;note('Fehler beim Umschalten',0);}
+  catch(e){el.checked=!el.checked;note(t('toggleFail'),0);}
 }
 async function defaults(){
-  if(!confirm('Alle Einstellungen auf Standardwerte zurücksetzen?'))return;
-  const r=await post('/api/defaults');fill(r.config);note('Standardwerte gespeichert',1);refresh();
+  if(!confirm(t('confirmDefaults')))return;
+  const r=await post('/api/defaults');fill(r.config);note(t('defaultsSaved'),1);refresh();
 }
 async function reboot(){
-  if(!confirm('Wordclock neu starten?'))return;
-  await post('/api/reboot');note('Neustart … Seite lädt in 15 s neu',1);setTimeout(()=>location.reload(),15000);
+  if(!confirm(t('confirmReboot')))return;
+  await post('/api/reboot');note(t('rebooting'),1);setTimeout(()=>location.reload(),15000);
 }
 
 // ---------------------------------------------------------------- Sprachausgabe
@@ -251,23 +317,21 @@ async function reboot(){
 // Das Intervall ist auf der Uhr gespeichert, die Stimme nur in diesem Browser.
 const TTS='speechSynthesis' in window;
 let jaVoices=[],lastShown,lastSpeak='';
-const store={get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}},
-  set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}}};
 function loadVoices(){
   if(!TTS)return;
   jaVoices=speechSynthesis.getVoices().filter(v=>/^ja/i.test(v.lang));
   const sel=$('voiceSel'),saved=store.get('wc_voice');
-  sel.innerHTML=jaVoices.map(v=>`<option>${esc(v.name)}</option>`).join('')||'<option value="">— keine japanische Stimme —</option>';
+  sel.innerHTML=jaVoices.map(v=>`<option>${esc(v.name)}</option>`).join('')||'<option value="">'+t('noVoice')+'</option>';
   if(saved&&jaVoices.some(v=>v.name===saved))sel.value=saved;
   voiceHint();
 }
 function voiceHint(){
-  let t;
-  if(!TTS)t='Dieser Browser kann keine Sprachausgabe.';
-  else if(!jaVoices.length)t='Keine japanische Stimme gefunden. Mac: Systemeinstellungen → Bedienungshilfen → Gesprochene Inhalte → Systemstimme → Stimmen verwalten → Japanisch (z. B. Kyoko) laden.';
-  else{t='Die Ansage kommt aus diesem Browser, solange die Seite geöffnet ist. Läuft der Tab im Hintergrund, kann sie bis zu einer Minute später kommen.';
-    if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)t='Bitte einmal auf die Seite klicken (z. B. „Jetzt ansagen“), sonst blockiert der Browser den Ton. '+t;}
-  $('voiceHint').textContent=t;
+  let m;
+  if(!TTS)m=t('noTTS');
+  else if(!jaVoices.length)m=t('noJaVoice');
+  else{m=t('voiceInfo');
+    if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)m=t('clickFirst')+m;}
+  $('voiceHint').textContent=m;
 }
 function say(text){
   if(!TTS||!text)return;
@@ -279,12 +343,12 @@ function say(text){
   speechSynthesis.speak(u);
 }
 function sayNow(){
-  if(lastSpeak)say(lastSpeak);else note('Gerade gibt es keine Uhrzeit zum Ansagen',0);
+  if(lastSpeak)say(lastSpeak);else note(t('nothingToSay'),0);
   voiceHint();
 }
 async function setVoice(el){
   try{const r=await post('/api/config',{voice_interval:el.value});fill(r.config);refresh();}
-  catch(e){note('Fehler beim Umschalten',0);if(cfg)el.value=cfg.voice_interval;}
+  catch(e){note(t('toggleFail'),0);if(cfg)el.value=cfg.voice_interval;}
 }
 // bei jeder neuen Minute pruefen, ob angesagt wird (nur im Uhr-Modus)
 function checkVoice(s){
@@ -295,28 +359,28 @@ function checkVoice(s){
   if(+s.shown.substr(3,2)%s.voice_interval===0)say(s.speak);
 }
 $('voiceSel').onchange=e=>{store.set('wc_voice',e.target.value);say(lastSpeak);};
-const VOICE={1:'jede Minute',15:'alle 15 min',60:'stündlich'};
 
-const MODE={clock:'Uhr',demo:'Demo',test:'Test'};
 const fmtLux=v=>v<10?(+v).toFixed(1):Math.round(v);
 async function refresh(){
   try{
     const s=await api('/api/state');
-    $('conn').textContent='verbunden';$('conn').className='ok';
+    $('conn').textContent=t('connected');$('conn').className='ok';
     const lit=new Set(s.positions),col='rgb('+s.color.join(',')+')';
     const k=0.35+0.65*Math.min(1,s.brightness/Math.max(1,maxB));
     [...face.children].forEach((d,i)=>{d.textContent=s.layout[i];
       if(lit.has(i)){d.style.color=col;d.style.opacity=k;d.style.textShadow='0 0 10px '+col;}
       else{d.style.color='';d.style.opacity='';d.style.textShadow='';}});
-    $('sentence').textContent=s.text||'—';$('roman').textContent=s.roman||'';$('german').textContent=s.german||'';
+    $('sentence').textContent=s.text||'—';const ro=s.roman==='warte auf NTP'?t('waitNtp'):s.roman;
+    $('roman').textContent=ro||'';$('german').textContent=(lang==='en'&&s.english!=null?s.english:s.german)||'';
     checkVoice(s);
-    const chips=[['Modus',MODE[s.mode]||s.mode],['Anzeige',s.shown||'—'],['Uhrzeit',s.clock?s.clock.substr(11,5):'kein NTP'],
-      [s.preview?'Vorschau':(s.night?'Nacht':'Tag'),s.brightness+' %']];
-    if(s.voice_interval)chips.push(['Ansage',VOICE[s.voice_interval]]);
-    if(s.sensor)chips.push(['Licht',s.lux==null?'—':fmtLux(s.lux)+' lux'+(s.lux_avg!=null?' <span class="hint">(Ø '+fmtLux(s.lux_avg)+')</span>':'')]);
+    const shown=s.shown==='alle an'?t('allOn'):s.shown==='alle aus'?t('allOff'):s.shown;
+    const chips=[[t('cMode'),t('mode')[s.mode]||s.mode],[t('cShown'),shown||'—'],[t('cTime'),s.clock?s.clock.substr(11,5):t('noNtp')],
+      [s.preview?t('cPreview'):(s.night?t('cNight'):t('cDay')),s.brightness+' %']];
+    if(s.voice_interval)chips.push([t('cVoice'),t('vChip')[s.voice_interval]]);
+    if(s.sensor)chips.push([t('cLight'),s.lux==null?'—':fmtLux(s.lux)+' lux'+(s.lux_avg!=null?' <span class="hint">(Ø '+fmtLux(s.lux_avg)+')</span>':'')]);
     $('chips').innerHTML=chips.map(([a,b])=>`<span class="chip">${a} <b>${b}</b></span>`).join('');
     $('luxnow').textContent=s.sensor?(s.sensor+(s.lux!=null?': '+fmtLux(s.lux)+' lux':'')):(s.sensor_error||'');
-  }catch(e){$('conn').textContent='keine Verbindung';$('conn').className='bad';}
+  }catch(e){$('conn').textContent=t('noConn');$('conn').className='bad';}
 }
 const esc=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const kb=n=>n==null?'—':(n/1024).toFixed(0)+' KB';
@@ -328,22 +392,23 @@ async function info(){
     ['day','night'].forEach(p=>$(p+'_brightness').max=maxB);
     const memT=i.mem_free+i.mem_alloc,w=i.wifi,n=i.ntp,l=i.leds;
     const rows=[
-      ['Firmware',i.firmware],['Board',i.machine+' <span class="hint">('+i.board+')</span>'],
-      ['Plattform',i.implementation+' · '+i.sysname],['Version',i.version],
-      ['CPU',(i.cpu_freq_mhz?i.cpu_freq_mhz+' MHz':'—')+(i.cpu_temp_c!=null?' · '+i.cpu_temp_c+' °C':'')],
-      ['RAM',kb(i.mem_free)+' frei von '+kb(memT)+bar(i.mem_alloc,memT)],
-      ['Flash',i.flash_total?kb(i.flash_free)+' frei von '+kb(i.flash_total)+bar(i.flash_total-i.flash_free,i.flash_total):'—'],
-      ['Laufzeit',dur(i.uptime_s)+' <span class="hint">(Start: '+(i.reset_reason||'?')+')</span>'],
-      ['WLAN',w.connected?(esc(w.ssid)+' · '+w.rssi+' dBm · Kanal '+w.channel):'nicht verbunden'],
-      ['IP / Port',w.ip+' : '+i.web_port+(w.hostname?' <span class="hint">('+w.hostname+')</span>':'')],['MAC',w.mac],
-      ['NTP',esc(n.server)+' · '+(n.last_sync?'zuletzt '+n.last_sync:'noch nicht')+(n.error?' <span style="color:var(--err)">'+esc(n.error)+'</span>':'')+' · nächster in '+dur(n.next_in_s)],
-      ['LEDs',l.count+' (Variante '+l.variant+', '+l.pin+', Start '+l.start+', max. '+l.max_brightness+' %)'],
-      ['Einstellungen',i.config_storage]];
+      [t('iFirmware'),i.firmware],[t('iBoard'),i.machine+' <span class="hint">('+i.board+')</span>'],
+      [t('iPlatform'),i.implementation+' · '+i.sysname],[t('iVersion'),i.version],
+      [t('iCpu'),(i.cpu_freq_mhz?i.cpu_freq_mhz+' MHz':'—')+(i.cpu_temp_c!=null?' · '+i.cpu_temp_c+' °C':'')],
+      [t('iRam'),kb(i.mem_free)+t('freeOf')+kb(memT)+bar(i.mem_alloc,memT)],
+      [t('iFlash'),i.flash_total?kb(i.flash_free)+t('freeOf')+kb(i.flash_total)+bar(i.flash_total-i.flash_free,i.flash_total):'—'],
+      [t('iUptime'),dur(i.uptime_s)+' <span class="hint">('+t('iStart')+': '+(i.reset_reason||'?')+')</span>'],
+      [t('iWifi'),w.connected?(esc(w.ssid)+' · '+w.rssi+' dBm · '+t('channel')+' '+w.channel):t('notConn')],
+      [t('iIp'),w.ip+' : '+i.web_port+(w.hostname?' <span class="hint">('+w.hostname+')</span>':'')],[t('iMac'),w.mac],
+      [t('iNtp'),esc(n.server)+' · '+(n.last_sync?t('last')+n.last_sync:t('notYet'))+(n.error?' <span style="color:var(--err)">'+esc(n.error)+'</span>':'')+' · '+t('nextIn')+dur(n.next_in_s)],
+      [t('iLeds'),l.count+' ('+t('variant')+' '+l.variant+', '+l.pin+', '+t('start')+' '+l.start+', '+t('max')+' '+l.max_brightness+' %)'],
+      [t('iCfg'),i.config_storage]];
     $('info').innerHTML=rows.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('');
   }catch(e){}
 }
+applyLang();
 if(TTS){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}else voiceHint();
-api('/api/config').then(fill).catch(()=>note('Einstellungen nicht ladbar',0));
+api('/api/config').then(fill).catch(()=>note(t('loadFail'),0));
 info();refresh();setInterval(refresh,2000);setInterval(info,15000);
 </script>
 </body>

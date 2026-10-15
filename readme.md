@@ -1,11 +1,33 @@
-# 今は Wordclock – Japanese word clock firmware
+# 今は Wordclock – a Japanese word clock
 
-Firmware for a Japanese word clock: an 8 × 8 grid of kanji and kana is lit from behind by WS2812B LEDs. Every minute the clock forms a complete Japanese sentence that tells the time, for example
+A Japanese word clock: an 8 × 8 grid of kanji and kana is lit from behind by WS2812B LEDs. Every minute the clock forms a complete Japanese sentence that tells the time, for example
 
 > 今は午後十時四十八分です
 > *ima wa gogo jū-ji yonjūhappun desu* – "It is now 10:48 p.m."
 
-The firmware runs on an **Adafruit Feather ESP32 V2** with **CircuitPython 10.x**. It sets the time via NTP, dims the LEDs by day and night using a light sensor, and serves a web interface for live view and settings.
+The firmware runs on an **Adafruit Feather ESP32 V2** with **CircuitPython 10.x**. It sets the time via NTP, dims the LEDs by day and night using a light sensor, and serves a web interface for live view and settings. The case (285 × 285 × 40 mm) is fully 3D-printed in PLA.
+
+<img src="docs/images/wordclock_jp_lit.png" alt="Rendering of the clock showing 今は午後三時二十五分です" width="420">
+
+## What's in this repository
+
+| You want to … | Look here |
+|---|---|
+| see what it looks like | [Photos](#photos) below, [web interface](docs/webui.md) |
+| know which parts to buy | [docs/hardware-bom.md](docs/hardware-bom.md) |
+| print the case | [3d-print-files/](3d-print-files) (3MF ready to print, STL viewable on GitHub) and [docs/printing.md](docs/printing.md) |
+| change the case | [cad/](cad) – parametric Python scripts that generate all print files |
+| flash and run the firmware | [Setup](#setup) below |
+| fix a problem | [docs/troubleshooting.md](docs/troubleshooting.md) |
+
+## Photos
+
+|                                                                                      |                                                                                             |
+|--------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| <img src="pictures/1_fully_assembled_front.jpeg" width="380"><br>Front               | <img src="pictures/2_fully_assembled_rear.jpeg" width="380"><br>Rear                        |
+| <img src="pictures/bottom-layer.jpeg" width="380"><br>Printed base with LED channels | <img src="pictures/place-first-led-strip.jpeg" width="380"><br>First LED strip in place     |
+| <img src="pictures/all-led-assembled.jpeg" width="380"><br>All 64 LEDs assembled     | <img src="pictures/bottom-layer-backside.jpeg" width="380"><br>Back side: electronics tray  |
+| <img src="pictures/test-print-kanjii.jpeg" width="380"><br>Test print of the front   | <img src="pictures/adafruit-light-sensor-module.jpeg" width="380"><br>VEML7700 light sensor |
 
 ## Letter grid
 
@@ -24,10 +46,10 @@ All 64 cells are used. The grid also supports an optional weekday (今は木曜�
 
 ## Files
 
-| File | Purpose |
+| File / folder | Purpose |
 |---|---|
 | `code.py` | Main program: Wi-Fi, NTP, time zone (Europe/Berlin incl. DST), light sensor, LED output, modes (clock / demo / test), status LED |
-| `wordclock_core.py` | Pure logic with no hardware dependencies (also runs under CPython): grid layout, sentence building, romaji, German translation, speech text, LED index mapping |
+| `wordclock_core.py` | Pure logic with no hardware dependencies (also runs under CPython): grid layout, sentence building, romaji, German and English translation, speech text, LED index mapping |
 | `config.py` | Persistent settings, stored as JSON in the ESP32's NVM (fallback: `/wordclock_config.json`), with validation |
 | `webui.py` | Small HTTP server on port 8080 (based on `ampule`), non-blocking and polled from the main loop |
 | `index.html` | Web interface: live grid, sentence with romaji and translation, settings |
@@ -35,6 +57,10 @@ All 64 cells are used. The grid also supports an optional weekday (今は木曜�
 | `wordclock_sim.py` | Terminal simulator for the Mac (not uploaded to the board) |
 | `deploy.sh` | Uploads changed files to the board over Wi-Fi (CircuitPython Web Workflow) |
 | `deploy-manual.sh` | Minimal upload of individual files without comparison |
+| `cad/` | Parametric CAD scripts (Python, manifold3d) that generate all print files |
+| `3d-print-files/` | Print files: `3mf/` ready to print (oriented, color change embedded), `stl/` same parts as STL, `test/` test strips |
+| `docs/` | Documentation: web interface, parts list, 3D printing, troubleshooting |
+| `pictures/` | Build photos |
 
 ## Hardware
 
@@ -93,7 +119,7 @@ The Web Workflow (port 80) is only served on the side while `code.py` is running
 
 ## Web interface
 
-`http://<board-ip>:8080`
+`http://<board-ip>:8080` – full description with screenshots in [`docs/webui.md`](docs/webui.md).
 
 - **Live:** current grid, sentence in Japanese, romaji and German, mode, displayed time, brightness, lux reading
 - **Settings:** NTP server and interval, light sensor on/off with lux thresholds for night and day (hysteresis), color and brightness for day and night (with live preview), demo mode, test mode, spoken announcement
@@ -164,3 +190,18 @@ The sentence style is configured in `TEXT_CFG` in `code.py` (defaults in `wordcl
 | `exact` | ちょうど on the full hour |
 | `weekday` | 今は○曜日の… |
 | `greeting` | おはようございます！ (5–9 h) / おやすみ！ (22–1 h) |
+
+## See also
+
+- [`docs/webui.md`](docs/webui.md) – web interface with screenshots
+- [`docs/hardware-bom.md`](docs/hardware-bom.md) – parts list
+- [`docs/troubleshooting.md`](docs/troubleshooting.md) – known problems and fixes
+- [`docs/printing.md`](docs/printing.md) – 3D printing: printer, slicer, settings, lessons learned
+
+## License
+
+- **Code** (firmware, web interface, CAD scripts in `cad/`, deploy scripts): [MIT](LICENSE)
+- **3D models, documentation and pictures** (`3d-print-files/`, `docs/`, `pictures/`): [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) – you may use, change and share them, also commercially, as long as you credit "Thomas Sadowsky – 今は Wordclock" and link to this repository.
+- **Third-party components** (`ampule.py`, the Noto Sans CJK character shapes) keep their own licenses – see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Developed with help from my best developer buddy Claude (Anthropic).

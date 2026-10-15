@@ -41,7 +41,7 @@ import wordclock_core as wc
 import config
 from webui import WebUI, PORT
 
-FW_VERSION = "1.4.1 (2026-10-09)"
+FW_VERSION = "1.5.0 (2026-10-15)"
 
 # ---------------------------------------------------------------- Hardware (fest)
 LED_PIN = board.D33          # Datenpin zum LED-Streifen: Pin "33" (kein Boot-Strapping-Pin; 12 meiden)
@@ -219,6 +219,7 @@ class App:
         self.txt = ""
         self.roman = ""
         self.german = ""
+        self.english = ""
         self.speak = ""
 
     # -------------------------------------------------------------- Hilfen
@@ -367,6 +368,7 @@ class App:
         self.txt = txt
         self.roman = " ".join(t[1] for t in wc.phrase(h, m, wd, TEXT_CFG))
         self.german = wc.german(h, m, wd, TEXT_CFG)
+        self.english = wc.english(h, m, wd, TEXT_CFG)
         self.speak = wc.speech(h, m, wd, TEXT_CFG)
         if pos is None:
             print("%02d:%02d  %s  -> Zeichen fehlt im Raster: %s" % (h, m, txt, missing))
@@ -390,7 +392,7 @@ class App:
             self.redraw = True
         if self.redraw:
             self.txt, self.roman, self.shown = "", "TEST", None
-            self.german = self.speak = ""
+            self.german = self.english = self.speak = ""
             self.render(range(64) if self.test_on else [])
 
     def tick_demo(self, t):
@@ -411,7 +413,7 @@ class App:
         if not self.synced:
             if self.redraw:
                 self.txt, self.roman, self.shown = "", "warte auf NTP", None
-                self.german = self.speak = ""
+                self.german = self.english = self.speak = ""
                 self.render([])
             return
         lt = local_time()
@@ -464,6 +466,7 @@ class App:
             "text": self.txt,
             "roman": self.roman,
             "german": self.german,
+            "english": self.english,
             "speak": self.speak,
             "voice_interval": self.cfg["voice_interval"],
             "positions": self.pos,

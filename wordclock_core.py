@@ -5,6 +5,7 @@
 #
 #   phrase(h, m, wd, cfg)      -> Satzteile [(Kanji, Romaji, Deutsch), ...]
 #   german(h, m, wd, cfg)      -> deutsche Uebersetzung als ganzer Satz
+#   english(h, m, wd, cfg)     -> englische Uebersetzung als ganzer Satz
 #   speech(h, m, wd, cfg)      -> Text fuer die Sprachausgabe (Browser, ja-JP)
 #   find_positions(text)       -> Rasterpositionen (0..63) der Zeichen
 #   led_index(pos, variant)    -> LED-Nummer auf dem Streifen (Serpentine, Einspeisung unten links)
@@ -189,6 +190,53 @@ def german(h, m, wd=0, cfg=None):
             s += " Guten Morgen!"
         elif h >= 22 or h < 2:
             s += " Gute Nacht!"
+    return s
+
+
+_WD_EN = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+_TZ_EN = {"夜中": "at night", "朝": "in the morning", "昼": "at midday",
+          "夕方": "in the late afternoon", "夜": "in the evening"}
+
+
+def _en_daypart(h, c):
+    mode = c["hour_mode"]
+    if mode == "ampm":
+        if h < 12:
+            return "at night" if h < 5 else "in the morning"
+        return "at midday" if h < 14 else ("in the afternoon" if h < 18 else "in the evening")
+    if mode == "tageszeit":
+        for a, b, k, r, de in TAGESZEIT:
+            if a <= h < b:
+                return _TZ_EN[k]
+    return ""
+
+
+def english(h, m, wd=0, cfg=None):
+    """Englische Uebersetzung des Satzes, z. B. 'It is now 3:25 in the afternoon.'"""
+    c = dict(DEFAULTS)
+    if cfg:
+        c.update(cfg)
+    hh = h if c["hour_mode"] == "24h" else _hour12(h, c)
+    if m == 0:
+        t = ("exactly %d o'clock" if c["exact"] else "%d o'clock") % hh
+    elif m == 30 and c["half"]:
+        t = "half past %d" % hh
+    else:
+        t = "%d:%02d" % (hh, m)
+    dp = _en_daypart(h, c)
+    if dp:
+        t += " " + dp
+    if c["weekday"]:
+        s = "It is now %s, %s." % (_WD_EN[wd], t)
+    elif c["prefix"]:
+        s = "It is now %s." % t
+    else:
+        s = t[0].upper() + t[1:] + "."
+    if c["greeting"]:
+        if 5 <= h < 10:
+            s += " Good morning!"
+        elif h >= 22 or h < 2:
+            s += " Good night!"
     return s
 
 

@@ -1,3 +1,7 @@
+# ampule - minimal web framework for CircuitPython
+# Source: https://github.com/deckerego/ampule
+# Copyright (c) 2021 John Ellis - MIT License, see THIRD_PARTY_NOTICES.md
+
 import io
 import re
 
